@@ -8,10 +8,12 @@ function! s:cmus_query(verb)
     let l:artist  = ''
     let l:title   = ''
     let l:album   = ''
-    let l:track   = '' " track number
-    let l:date    = ''
+    " let l:track   = '' " track number
+    " let l:date    = ''
     let l:file    = '' " file name
     let l:stream  = '' " for radio or other streaming services
+    let l:duration = ''
+    let l:length = ''
 
     let l:result = system('cmus-remote ' . a:verb)
     let l:lines = split(l:result, '\n')
@@ -28,17 +30,23 @@ function! s:cmus_query(verb)
         if empty(l:title)
             let l:title = matchstr(l:line, '\vtitle\s+\zs(.*)')
         endif
-        if empty(l:track)
-            let l:track = matchstr(l:line, '\vtracknumber\s+\zs(.*)')
-        endif
-        if empty(l:date)
-            let l:date = matchstr(l:line, '\vdate\s+\zs(.*)')
-        endif
+        " if empty(l:track)
+        "     let l:track = matchstr(l:line, '\vtracknumber\s+\zs(.*)')
+        " endif
+        " if empty(l:date)
+        "     let l:date = matchstr(l:line, '\vdate\s+\zs(.*)')
+        " endif
         if empty(l:file)
             let l:file = matchstr(l:line, '\vfile\s+\zs(.*)')
         endif
         if empty(l:stream)
             let l:stream = matchstr(l:line, '\vstream\s+\zs(.*)')
+        endif
+        if empty(l:duration)
+            let l:duration = matchstr(l:line, '\vposition\s+\zs(.*)')
+        endif
+        if empty(l:length)
+            let l:length = matchstr(l:line, '\vduration\s+\zs(.*)')
         endif
     endfor
 
@@ -55,9 +63,9 @@ function! s:cmus_query(verb)
         if !empty(l:artist)
             call extend(l:list, [l:artist, ' - '])
         endif
-        if l:track
-            call extend(l:list, [l:track, ') '])
-        endif
+        " if l:track
+        "     call extend(l:list, [l:track, ') '])
+        " endif
         if !empty(l:title)
             call add(l:list, l:title)
         else
@@ -66,8 +74,12 @@ function! s:cmus_query(verb)
         if !empty(l:album)
             call extend(l:list, [' [', l:album, ']'])
         endif
-        if l:date
-            call extend(l:list, [' @', l:date])
+        " if l:date
+        "     call extend(l:list, [' @', l:date])
+        " endif
+        if l:duration && l:length
+            let l:progress =  strftime("%M:%S", l:duration).'/'.strftime("%M:%S", l:length)
+            call extend(l:list, [' ', l:progress])
         endif
     endif
     echom join(l:list, '')
@@ -99,6 +111,16 @@ endfunction
 
 function! s:cmus_stop()
     call s:cmus_query("--stop -Q")
+endfunction
+
+function! s:cmus_skipforward(...)
+    let l:secs = a:1 > 0 ? a:1 : 5
+    call s:cmus_query("-k +" . l:secs . " -Q")
+endfunction
+
+function! s:cmus_skipbackward(...)
+    let l:secs = a:1 > 0 ? a:1 : 5
+    call s:cmus_query("-k -" . l:secs . " -Q")
 endfunction
 
 function! s:cmus()
@@ -136,3 +158,5 @@ command! CmusPlay     call s:cmus_play()
 command! CmusPause    call s:cmus_pause()
 command! CmusStop     call s:cmus_stop()
 command! CmusNext     call s:cmus_next()
+command! -nargs=1   CmusSkipfwd    call s:cmus_skipforward(<args>)
+command! -nargs=1   CmusSkipback    call s:cmus_skipbackward(<args>)
