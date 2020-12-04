@@ -72,9 +72,7 @@ at the moment following commands are implemented:
 - `:CmusStop`
 - `:CmusNext`
 - `:CmusSkipfwd`
-  seeks a track forward by a specified amount of seconds (default: 5)
 - `:CmusSkipback`
-  seeks a track backward by a specified amount of seconds (default: 5)
 
 
 
@@ -87,6 +85,8 @@ nnoremap <leader>x :CmusPlay<cr>
 nnoremap <leader>c :CmusPause<cr>
 nnoremap <leader>v :CmusStop<cr>
 nnoremap <leader>b :CmusNext<cr>
+
+" The two below expect a count, if none is supplied, then it will default to 5 seconds.
 nnoremap <leader>f :<C-U>CmusSkipfwd v:count<CR>
 nnoremap <leader>b :<C-U>CmusSkipback v:count<CR>
 ```
